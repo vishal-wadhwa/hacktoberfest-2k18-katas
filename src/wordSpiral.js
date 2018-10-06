@@ -1,64 +1,47 @@
-//direction
-const d = [
-  { x: 0, y: -1 },  //up
-  { x: 1, y: 0 },   //right
-  { x: 0, y: 1 },   //down
-  { x: -1, y: 0 },  //left
-]
-
 export const wordSpiral = s => {
-  ////// CHECK INPUT
-  if (typeof s != 'string') return []
+  let ords = Array(s.length)
+  const ord = ch => {
+    return ch.charCodeAt(0) - 96
+  }
 
-  ////// DRAW CHARACTERS TO POINTS
-  let ps = {}             //points
-  let p = { x: 0, y: 0 }  //current point
-  let m = 3               //current move direction
-  
-  //start drawing
-  for (let i = s.length - 1; i >= 0; i--) {
-    for (let j = 0, k = s.charCodeAt(i) - 96; j < k; j++) {
-      //add character to point
-      if (!ps[p.x]) ps[p.x] = {}
-      if (!ps[p.x][p.y]) ps[p.x][p.y] = s[i]
+  let x = 0, y = 0
 
-      //move point for the next character
-      p.x = p.x + d[m].x
-      p.y = p.y + d[m].y
+  const dx = [0, 1, 0, -1]
+  const dy = [1, 0, -1, 0]
+
+  //mxs: d r u l
+  let mxd = 0, mxu = 0, mxl = 0, mxr = 0
+
+  for (let i = 0; i < s.length; ++i) {
+    ords[i] = ord(s[i])
+    x += dx[i % 4] * ords[i] + dx[(i + 1) % 4]
+    y += dy[i % 4] * ords[i] + dy[(i + 1) % 4]
+
+    mxd = Math.max(mxd, y)
+    mxr = Math.max(mxr, x)
+    mxu = Math.max(mxu, -y)
+    mxl = Math.max(mxl, -x)
+  }
+
+  let row = ' '.repeat(mxl + mxr)
+  let ans = [...Array(mxd + mxu)].map(_ => row.split(''))
+
+  x = mxl
+  y = mxu
+
+  for (let i = 0; i < s.length; ++i) {
+    let ct = 0
+
+    while (ct < ords[i]) {
+      ans[y][x] = s[i]
+      x += dx[i % 4]
+      y += dy[i % 4]
+      ++ct
     }
-    
-    //turn right
-    m = (m + 1) % 4
-  }
-  
-  ////// FIND BOUNDARY
-  let t = 0, r = 0, b = 0, l = 0  //top, right, bottom, left
 
-  for (let x in ps) {
-    x = Number(x)
-    if (x < l) l = x
-    else if (x > r) r = x
-    
-    for (let y in ps[x]) {
-      y = Number(y)
-      if (y < t) t = y
-      else if (y > b) b = y
-    }
-  }
-  
-  ////// DRAW POINTS INTO ARRAY OF STRINGS
-  let ss = []       //strings
-  let w = r - l + 1 //width
-  
-  for (let y = t; y <= b; y++) {
-    let s = Array(w).fill(' ')
-    
-    for (let x = l; x <= r; x++)
-      if (ps[x] && ps[x][y]) s[x - l] = ps[x][y]
-
-    ss.push(s.join(''))
+    x += dx[(i + 1) % 4] - dx[i % 4]
+    y += dy[(i + 1) % 4] - dy[i % 4]
   }
 
-  ////// RETURN
-  return ss;
+  return ans.map(row => row.join(''))
 }
